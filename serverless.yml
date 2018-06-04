@@ -1,0 +1,164 @@
+---
+service: appsync-placesearch
+
+frameworkVersion: ">=1.21.0 <2.0.0"
+
+plugins:
+  - serverless-appsync-plugin
+  - serverless-python-requirements
+
+provider:
+  name: aws
+  stage: "${opt:stage, env:SLS_STAGE, 'dev'}"
+  region: eu-west-1
+  runtime: python3.6
+
+custom:
+  awsAccountId: ${env:AWS_ACCOUNT_ID}
+  esEndpoint: ${env:ES_ENDPOINT}
+  esGeoIndex: places
+  esRegion: eu-west-1
+  esGeoMappingFile: elasticsearch/location_geopoint_mapping.json
+  esDomainName: placesearch
+  esRoleName: AppSyncServiceRole
+  pythonRequirements:
+    dockerizePip: true
+  appSync:
+    name: appSyncElasticsearchTest
+    apiId: ${env:APPSYNC_API_ID}
+    apiKey: ${env:APPSYNC_API_KEY}
+    authenticationType: API_KEY
+    mappingTemplatesLocation: mapping-templates
+    mappingTemplates:
+      - dataSource: esInstance
+        type: Query
+        field: searchPlaceByName
+        request: searchPlaceByName-request-mapping-template.txt
+        response: searchPlaceByName-response-mapping-template.txt
+      - dataSource: esInstance
+        type: Query
+        field: searchPlaceByLatLng
+        request: searchPlaceByLatLng-request-mapping-template.txt
+        response: searchPlaceByLatLng-response-mapping-template.txt
+      - dataSource: esInstance
+        type: Mutation
+        field: createPlace
+        request: createPlace-request-mapping-template.txt
+        response: createPlace-response-mapping-template.txt
+    schema: schema.graphql
+    serviceRole: ${self:custom.esRoleName}
+    dataSources:
+      - type: AMAZON_ELASTICSEARCH
+        name: esInstance
+        description: 'ElasticSearch'
+        config:
+          endpoint: ${self:custom.esEndpoint} # required # "https://{DOMAIN}.{REGION}.es.amazonaws.com"
+          serviceRoleArn: arn:aws:iam::${self:custom.awsAccountId}:role/ElasticSearch-${self:custom.esRoleName}
+
+functions:
+  elasticsearchGeoMapping:
+    handler: handlers/elasticsearch_geomapping.handler
+    name: ${self:provider.stage}-elasticsearchGeoMapping
+    description: Creates geo mapping in Elasticsearch
+    timeout: 10 # optional, default is 6
+    role: esGeoLambdaServiceRole
+    environment:
+      ES_ENDPOINT: ${self:custom.esEndpoint}
+      ES_INDEX: ${self:custom.esGeoIndex}
+      ES_GEO_MAPPING_FILE: ${self:custom.esGeoMappingFile}
+      ES_REGION: ${self:custom.esRegion}
+
+resources:
+  Resources:
+    esGeoLambdaServiceRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: esGeoLambdaServiceRole
+        AssumeRolePolicyDocument:
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: esGeoLambdaServiceRolePolicy
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                  Resource:
+                    - 'Fn::Join':
+                        - ':'
+                        -
+                          - 'arn:aws:logs'
+                          - Ref: 'AWS::Region'
+                          - Ref: 'AWS::AccountId'
+                          - 'log-group~:/aws/lambda/*:*:*'
+                - Effect: "Allow"
+                  Action:
+                    - "es:*"
+                  Resource:
+                    - 'Fn::Join':
+                        - ''
+                        -
+                          - 'arn:aws:es:'
+                          - Ref: 'AWS::Region'
+                          - ':'
+                          - Ref: 'AWS::AccountId'
+                          - ':domain/'
+                          - "${self:custom.esDomainName}"
+                          - '/*'
+    ElasticSearchInstance:
+      Type: AWS::Elasticsearch::Domain
+      Properties:
+        ElasticsearchVersion: 6.2
+        DomainName: "${self:custom.esDomainName}"
+        EBSOptions:
+          EBSEnabled: true
+          VolumeType: gp2
+          VolumeSize: 10
+        ElasticsearchClusterConfig:
+          InstanceType: t2.small.elasticsearch
+          InstanceCount: 1
+          DedicatedMasterEnabled: false
+          ZoneAwarenessEnabled: false
+    AppSyncESServiceRole:
+      Type: "AWS::IAM::Role"
+      Properties:
+        RoleName: "ElasticSearch-${self:custom.esRoleName}"
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            -
+              Effect: "Allow"
+              Principal:
+                Service:
+                  - "appsync.amazonaws.com"
+              Action:
+                - "sts:AssumeRole"
+        Policies:
+          -
+            PolicyName: "AppSyncESServiceRolePolicy"
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                -
+                  Effect: "Allow"
+                  Action:
+                    - "es:*"
+                  Resource:
+                    - 'Fn::Join':
+                        - ''
+                        -
+                          - 'arn:aws:es:'
+                          - Ref: 'AWS::Region'
+                          - ':'
+                          - Ref: 'AWS::AccountId'
+                          - ':domain/'
+                          - "${self:custom.esDomainName}"
+                          - '/*'

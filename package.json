@@ -1,0 +1,16 @@
+{
+  "name": "appsync-elasticsearch-serverless",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "ssh://git-codecommit.eu-west-1.amazonaws.com/v1/repos/appsync-elasticsearch-serverless"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "serverless-appsync-plugin": "0.0.7",
+    "serverless-python-requirements": "4.0.3"
+  }
+}

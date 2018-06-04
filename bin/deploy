@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -e
+
+####################
+# deploy cloudformation stack
+####################
+serverless deploy --verbose
+# serverless deploy function -f elasticsearchGeoMapping

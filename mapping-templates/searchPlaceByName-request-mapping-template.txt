@@ -1,0 +1,18 @@
+{
+    "version":"2017-02-28",
+    "operation":"GET",
+    "path":"/places/_search",
+    "params":{
+        "body":{
+            "query" : {
+              "match": {
+                "name": {
+                  "query": "$context.arguments.name",
+                  "fuzziness": 2,
+                  "prefix_length": 1
+                }
+              }
+            }
+        }
+    }
+}

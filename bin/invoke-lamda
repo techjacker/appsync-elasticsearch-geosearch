@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+####################
+# create elasticsearch geo mapping
+####################
+# serverless deploy function -f elasticsearchGeoMapping
+serverless invoke -f elasticsearchGeoMapping -l

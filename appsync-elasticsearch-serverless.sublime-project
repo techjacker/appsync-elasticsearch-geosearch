@@ -1,0 +1,29 @@
+{
+	"build_systems":
+	[
+		{
+			"file_regex": "^[ ]*File \"(...*?)\", line ([0-9]*)",
+			"name": "Anaconda Python Builder",
+			"selector": "source.python",
+			"shell_cmd": "\"python\" -u \"$file\""
+		}
+	],
+	"folders":
+	[
+		{
+			"file_exclude_patterns":
+			[
+				"*.sublime-project"
+			],
+			"folder_exclude_patterns":
+			[
+				"node_modules",
+				"__pycache__",
+				".serverless",
+				".pytest_cache",
+				"env"
+			],
+			"path": "."
+		}
+	]
+}

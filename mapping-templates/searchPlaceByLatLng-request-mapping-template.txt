@@ -1,0 +1,25 @@
+{
+  "version": "2017-02-28",
+  "operation": "GET",
+  "path": "/places/_search",
+  "params": {
+    "body": {
+      "query": {
+        "bool": {
+          "must": {
+            "match_all": {}
+          },
+          "filter": {
+            "geo_distance": {
+              "distance": "200km",
+              "location": {
+                "lat": $context.arguments.lat,
+                "lon": $context.arguments.lng,
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

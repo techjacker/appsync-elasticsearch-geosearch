@@ -1,0 +1,86 @@
+﻿mutation CreatePlace {
+  createPlace(input: {
+    lat: -25.363,
+    lng: 131.044,
+    name: "House in Australia",
+    price: 100.25
+  }) {
+    name
+    price
+    lat
+    lng
+  }
+}
+
+query {
+  searchPlaceByLatLng(lat: -25.363, lng: 130.044) {
+    name
+    price
+    lat
+    lng
+  }
+}
+
+query {
+  searchPlaceByName(name: "House") {
+    name
+    price
+    lat
+    lng
+  }
+}
+
+
+subscription OnCreateTodoSubscription {
+    onCreateTodo {
+        __typename
+        id
+        title
+        status
+    }
+}
+
+
+PUT /places
+{
+  "mappings": {
+    "_doc": {
+      "properties": {
+        "location": {
+          "type": "geo_point"
+        }
+      }
+    }
+  }
+}
+
+PUT /places/_doc/123
+{
+    "name": "hello world",
+    "price": 1,
+    "location": {
+      "lat": 41.12,
+      "lon": -71.34
+    }
+}
+
+
+GET /places/_search
+{
+  "query": {
+    "bool": {
+      "must": {
+        "match_all": {}
+      },
+      "filter": {
+        "geo_distance": {
+          "distance": "200km",
+          "location": {
+              "lat": 41.12,
+              "lon": -71.34
+            }
+        }
+      }
+    }
+  }
+}

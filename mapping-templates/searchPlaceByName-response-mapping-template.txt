@@ -1,0 +1,13 @@
+[
+	#foreach($entry in $context.result.hits.hits)
+		## $velocityCount starts at 1 and increments with the #foreach loop **
+		#if( $velocityCount > 1 ) , #end
+		$util.toJson({
+			"name" : "$entry.get('_source')['name']",
+			"lat" : $entry.get('_source')['location']['lat'],
+			"lng": $entry.get('_source')['location']['lon'],
+			"price": $entry.get('_source')['price'],
+			"id": "$entry.get('_id')"
+		})
+	#end
+]

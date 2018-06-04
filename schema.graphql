@@ -1,0 +1,59 @@
+﻿type Mutation {
+  createPlace(input: CreatePlaceInput!): Place
+  # deletePlace(input: DeletePlaceInput!): Place
+  # updatePlace(input: UpdatePlaceInput!): Place
+}
+
+type Query {
+  searchPlaceByName(name: String!): [Place]!
+  searchPlaceByLatLng(lat:Float!, lng:Float!):  [Place]!
+}
+
+type Subscription {
+  onCreatePlace(lat: Float, lng: Float, name: String, price: Float): Place
+    @aws_subscribe(mutations:["createPlace"])
+  # onDeletePlace(id: ID, lat: Float, lng: Float, name: String, price: Float): Place
+  #   @aws_subscribe(mutations:["deletePlace"])
+  # onUpdatePlace(id: ID, lat: Float, lng: Float, name: String, price: Float): Place
+    # @aws_subscribe(mutations:["updatePlace"])
+}
+
+type Place {
+  name: String!
+  price: Float!
+  lat: Float!
+  lng: Float!
+}
+
+type PlaceOutput {
+  name: String!
+  price: Float!
+  lat: Float!
+  lng: Float!
+}
+
+
+input CreatePlaceInput {
+  name: String!
+  price: Float!
+  lat: Float!
+  lng: Float!
+}
+
+input DeletePlaceInput {
+  id: ID!
+}
+
+input UpdatePlaceInput {
+  id: ID!
+  name: String
+  price: Float
+  lat: Float
+  lng: Float
+}
+
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}

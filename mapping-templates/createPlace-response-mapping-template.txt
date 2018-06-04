@@ -1,0 +1,6 @@
+$util.toJson({
+	"name": "$context.result.get('_source')['name']",
+	"price": $context.result.get('_source')['price'],
+	"lat": $context.result.get('_source')['location']['lat'],
+	"lng": $context.result.get('_source')['location']['lon']
+})
