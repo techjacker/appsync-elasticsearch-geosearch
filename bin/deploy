@@ -4,5 +4,6 @@ set -e
 ####################
 # deploy cloudformation stack
 ####################
+. .env
 serverless deploy --verbose
 # serverless deploy function -f elasticsearchGeoMapping
