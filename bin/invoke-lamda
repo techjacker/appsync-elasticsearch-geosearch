@@ -3,5 +3,5 @@
 ####################
 # create elasticsearch geo mapping
 ####################
-# serverless deploy function -f elasticsearchGeoMapping
+. bin/helpers/getawsvars.sh
 serverless invoke -f elasticsearchGeoMapping -l
